@@ -27,6 +27,10 @@ const jobInput = formElementEdit.querySelector(
 
 // @todo: Форма карточки;
 const formElementAdd = document.querySelector('.popup__form[name="new-place"]');
+const placeInput = formElementAdd.querySelector(
+  '.popup__input[name="place-name"]'
+);
+const srcInput = formElementAdd.querySelector('.popup__input[name="link"]');
 
 //@todo: Функция добавления карточки (разметка)
 function addCard(
@@ -41,10 +45,8 @@ function addCard(
 }
 
 // @todo: Добавить карточку на страницу через форму с сабмитом
-function placeFormSubmit(evt, form, openImagePopup, popupAdd, closeModalFun) {
+function placeFormSubmit(evt) {
   evt.preventDefault();
-  const placeInput = form.querySelector('.popup__input[name="place-name"]');
-  const srcInput = form.querySelector('.popup__input[name="link"]');
   // Получаем значение полей jobInput и nameInput из свойства value
   const placeValue = placeInput.value;
   const srcValue = srcInput.value;
@@ -53,11 +55,11 @@ function placeFormSubmit(evt, form, openImagePopup, popupAdd, closeModalFun) {
     createCard(obj, deleteCardFunction, likeCard, openImagePopup)
   );
 
-  closeModalFun(evt, popupAdd);
+  closeModal(popupAdd);
 }
 
 // @todo: Редактируем данные профиля на странице
-function handleFormSubmit(evt, popup) {
+function handleFormSubmit(evt) {
   evt.preventDefault();
   // Получаем значение полей jobInput и nameInput из свойства value
   const nameValue = nameInput.value;
@@ -69,7 +71,7 @@ function handleFormSubmit(evt, popup) {
   profileTitle.textContent = nameValue;
   profileDescription.textContent = jobValue;
   // Закрываем попап после успешного редактирования профиля
-  closeModal(evt, popup);
+  closeModal(popupEdit);
 }
 
 // @todo: Открываем попап картинки;
@@ -94,12 +96,14 @@ initialCards.forEach(function (element) {
 
 // @todo: Открытие попапов
 editButton.addEventListener("click", function () {
-  if (popupEdit.classList.contains("popup_type_edit")) {
-    const input1 = popupEdit.querySelector(".popup__input_type_name");
-    const input2 = popupEdit.querySelector(".popup__input_type_description");
-    input1.value = document.querySelector(".profile__title").textContent;
-    input2.value = document.querySelector(".profile__description").textContent;
-  }
+  const inputName = popupEdit.querySelector(".popup__input_type_name");
+  const inputDescription = popupEdit.querySelector(
+    ".popup__input_type_description"
+  );
+  inputName.value = document.querySelector(".profile__title").textContent;
+  inputDescription.value = document.querySelector(
+    ".profile__description"
+  ).textContent;
   openModal(popupEdit);
 });
 addButton.addEventListener("click", function () {
@@ -110,7 +114,7 @@ addButton.addEventListener("click", function () {
 closeBtns.forEach((btn) =>
   btn.addEventListener("click", function (evt) {
     const parentPopup = btn.closest(".popup");
-    closeModal(evt, parentPopup);
+    closeModal(parentPopup);
   })
 );
 
@@ -122,12 +126,10 @@ popups.forEach((el) =>
 );
 
 // @todo: Редактирование профиля
-formElementEdit.addEventListener("submit", function (evt) {
-  handleFormSubmit(evt, popupEdit);
-});
+formElementEdit.addEventListener("submit", handleFormSubmit);
 
 // @todo: Добавление карточки
 formElementAdd.addEventListener("submit", function (evt) {
-  placeFormSubmit(evt, formElementAdd, openImagePopup, popupAdd, closeModal);
+  placeFormSubmit(evt);
   formElementAdd.reset();
 });
