@@ -1,10 +1,22 @@
 import "./pages/index.css";
-import { initialCards } from "./scripts/cards";
+// import { initialCards } from "./scripts/cards";
 import { openModal, closeModal, closeOverlay } from "./scripts/modal";
 import { createCard, deleteCardFunction, likeCard } from "./scripts/card";
+import { enableValidation, clearValidation } from "./scripts/validation";
+import {
+  getUserInfo,
+  getInitialCards,
+  addUserInfo,
+  addNewCard,
+} from "./scripts/api ";
 
 // @todo: Контейнер для карточек
 const container = document.querySelector(".places__list");
+
+// @todo: Заголовки профиля
+export const profileName = document.querySelector(".profile__title");
+const profileDescription = document.querySelector(".profile__description");
+const profileImage = document.querySelector(".profile__image");
 
 // @todo: Попапы
 const popups = document.querySelectorAll(".popup");
@@ -51,11 +63,18 @@ function placeFormSubmit(evt) {
   const placeValue = placeInput.value;
   const srcValue = srcInput.value;
   const obj = { name: placeValue, link: srcValue };
-  container.prepend(
-    createCard(obj, deleteCardFunction, likeCard, openImagePopup)
-  );
+  addNewCard(obj)
+    .then((res) => {
+      console.log(res);
+      container.prepend(
+        createCard(res, deleteCardFunction, likeCard, openImagePopup)
+      );
 
-  closeModal(popupAdd);
+      closeModal(popupAdd);
+    })
+    .catch((err) => {
+      console.log(`Ошибка: ${err}`);
+    });
 }
 
 // @todo: Редактируем данные профиля на странице
@@ -64,14 +83,17 @@ function handleFormSubmit(evt) {
   // Получаем значение полей jobInput и nameInput из свойства value
   const nameValue = nameInput.value;
   const jobValue = jobInput.value;
-  // Выбираем элементы, куда должны быть вставлены значения полей
-  const profileTitle = document.querySelector(".profile__title");
-  const profileDescription = document.querySelector(".profile__description");
-  // Вставляем новые значения с помощью textContent
-  profileTitle.textContent = nameValue;
-  profileDescription.textContent = jobValue;
-  // Закрываем попап после успешного редактирования профиля
-  closeModal(popupEdit);
+  addUserInfo(nameValue, jobValue)
+    .then((res) => {
+      // console.log(res);
+      profileName.id = res._id;
+      profileName.textContent = res.name;
+      profileDescription.textContent = res.about;
+      closeModal(popupEdit);
+    })
+    .catch((err) => {
+      console.log(`Ошибка: ${err}`);
+    });
 }
 
 // @todo: Открываем попап картинки;
@@ -90,9 +112,14 @@ function openImagePopup(evt, obj) {
 // -----------------ВЫЗОВЫ ФУНКЦИЙ--------------------
 
 // @todo: Вывести карточки на страницу
-initialCards.forEach(function (element) {
-  addCard(element, deleteCardFunction, likeCard, openImagePopup);
-});
+// initialCards.forEach(function (element) {
+//   addCard(element, deleteCardFunction, likeCard, openImagePopup);
+// });
+
+const initialCards = (cardsArr) =>
+  cardsArr.forEach(function (element) {
+    addCard(element, deleteCardFunction, likeCard, openImagePopup);
+  });
 
 // @todo: Открытие попапов
 editButton.addEventListener("click", function () {
@@ -100,13 +127,27 @@ editButton.addEventListener("click", function () {
   const inputDescription = popupEdit.querySelector(
     ".popup__input_type_description"
   );
-  inputName.value = document.querySelector(".profile__title").textContent;
-  inputDescription.value = document.querySelector(
-    ".profile__description"
-  ).textContent;
+  inputName.value = profileName.textContent;
+  inputDescription.value = profileDescription.textContent;
+  clearValidation(popupEdit, {
+    formSelector: ".popup__form",
+    inputSelector: ".popup__input",
+    submitButtonSelector: ".popup__button",
+    inactiveButtonClass: "popup__button_disabled",
+    inputErrorClass: "popup__input_type_error",
+    errorClass: "popup__error_visible",
+  });
   openModal(popupEdit);
 });
 addButton.addEventListener("click", function () {
+  clearValidation(popupAdd, {
+    formSelector: ".popup__form",
+    inputSelector: ".popup__input",
+    submitButtonSelector: ".popup__button",
+    inactiveButtonClass: "popup__button_disabled",
+    inputErrorClass: "popup__input_type_error",
+    errorClass: "popup__error_visible",
+  });
   openModal(popupAdd);
 });
 
@@ -120,7 +161,7 @@ closeBtns.forEach((btn) =>
 
 // @todo: Закрытие попапов по оверлею
 popups.forEach((el) =>
-  el.addEventListener("click", function (evt) {
+  el.addEventListener("mousedown", function (evt) {
     closeOverlay(evt, el);
   })
 );
@@ -133,3 +174,26 @@ formElementAdd.addEventListener("submit", function (evt) {
   placeFormSubmit(evt);
   formElementAdd.reset();
 });
+
+enableValidation({
+  formSelector: ".popup__form",
+  inputSelector: ".popup__input",
+  submitButtonSelector: ".popup__button",
+  inactiveButtonClass: "popup__button_disabled",
+  inputErrorClass: "popup__input_type_error",
+  errorClass: "popup__error_visible",
+});
+
+// -------------------------------------------------------
+
+Promise.all([getUserInfo(), getInitialCards()])
+  .then(([userData, dataCards]) => {
+    profileName.id = userData._id;
+    profileName.textContent = userData.name;
+    profileDescription.textContent = userData.about;
+    profileImage.src = userData.avatar;
+    initialCards(dataCards);
+  })
+  .catch((err) => {
+    console.log(`Ошибка: ${err}`);
+  });
