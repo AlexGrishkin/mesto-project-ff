@@ -1,5 +1,4 @@
 import "./pages/index.css";
-// import { initialCards } from "./scripts/cards";
 import { openModal, closeModal, closeOverlay } from "./scripts/modal";
 import {
   createCard,
