@@ -1,3 +1,4 @@
+// @todo:общий конфиг
 const config = {
   baseUrl: "https://nomoreparties.co/v1/wff-cohort-3",
   headers: {
@@ -6,26 +7,30 @@ const config = {
   },
 };
 
-const getResponse = (res) => {
+// @todo: Проверяем ответ от сервера
+function getResponse(res) {
   if (res.ok) {
     return res.json();
   }
   return Promise.reject(`Ошибка: ${res.status}`);
-};
+}
 
-export const getUserInfo = () => {
+// @todo: Получаем данные о пользователе
+export function getUserInfo() {
   return fetch(`${config.baseUrl}/users/me`, {
     headers: config.headers,
   }).then(getResponse);
-};
+}
 
-export const getInitialCards = () => {
+// @todo: Получаем карточки которые загрузили пользователи
+export function getInitialCards() {
   return fetch(`${config.baseUrl}/cards`, {
     headers: config.headers,
   }).then(getResponse);
-};
+}
 
-export const addUserInfo = (addName, addAbout) => {
+// @todo: Заменяем данные о пользователе на сервере
+export function addUserInfo(addName, addAbout) {
   return fetch(`${config.baseUrl}/users/me`, {
     method: "PATCH",
     headers: config.headers,
@@ -34,9 +39,10 @@ export const addUserInfo = (addName, addAbout) => {
       about: addAbout,
     }),
   }).then(getResponse);
-};
+}
 
-export const addNewCard = (obj) => {
+// @todo: Отправляем на сервер новую карточку
+export function addNewCard(obj) {
   return fetch(`${config.baseUrl}/cards`, {
     method: "POST",
     headers: config.headers,
@@ -45,25 +51,39 @@ export const addNewCard = (obj) => {
       link: obj.link,
     }),
   }).then(getResponse);
-};
+}
 
-export const deleteCardId = (id) => {
+// @todo: Удаляем карточку с сервера
+export function deleteCardId(id) {
   return fetch(`${config.baseUrl}/cards/${id}`, {
     method: "DELETE",
     headers: config.headers,
   }).then(getResponse);
-};
+}
 
-export const addLike = (id) => {
+// @todo: Поставить лайк на карточку
+export function addLike(id) {
   return fetch(`${config.baseUrl}/cards/likes/${id}`, {
     method: "PUT",
     headers: config.headers,
   }).then(getResponse);
-};
+}
 
-export const removeLike = (id) => {
+// @todo: Убрать лайк с карточки
+export function removeLike(id) {
   return fetch(`${config.baseUrl}/cards/likes/${id}`, {
     method: "DELETE",
     headers: config.headers,
   }).then(getResponse);
-};
+}
+
+// @todo: Заменить аватар пользователя
+export function addNewUserAvatar(addAvatar) {
+  return fetch(`${config.baseUrl}/users/me/avatar`, {
+    method: "PATCH",
+    headers: config.headers,
+    body: JSON.stringify({
+      avatar: addAvatar,
+    }),
+  }).then(getResponse);
+}

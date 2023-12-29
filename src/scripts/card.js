@@ -13,19 +13,28 @@ export function createCard(
   const cardElement = cardTemplate
     .querySelector(".places__item")
     .cloneNode(true);
+  // @todo: присваеваем карточки уникальный айди
   cardElement.id = cardData._id;
+  // @todo: необходимые константы
   const likeButton = cardElement.querySelector(".card__like-button");
   const deleteCardButton = cardElement.querySelector(".card__delete-button");
   const cardImage = cardElement.querySelector(".card__image");
   const cardTitle = cardElement.querySelector(".card__title");
+  // @todo: отображаем количество лайков на карточке
   cardElement.querySelector(".card__like-number").textContent =
     cardData.likes.length;
   cardImage.src = cardData.link;
   cardImage.alt = cardData.name;
   cardTitle.textContent = cardData.name;
+  // @todo: убираем кнопки удаления с не моих карточек
   removeDeleteButton(cardData, deleteCardButton);
+  // @todo: удаление карточки по клику
   deleteCardButton.addEventListener("click", deleteCard);
+  // @todo: Поставить лайк на карточку
   likeButton.addEventListener("click", likeCardFunction);
+  // @todo: Отобразить активное состояние лайка на всех карточках где я поставил лайк
+  cardData.likes.forEach((like) => checkMyLike(like._id, likeButton));
+  // @todo: Открыть картинку карточки
   cardImage.addEventListener("click", function (evt) {
     openImageFunction(evt, cardData);
   });
@@ -37,12 +46,9 @@ export function createCard(
 
 export const deleteCardFunction = function (evt) {
   const card = evt.target.closest(".places__item");
-  // console.log(card);
   const cardId = card.id;
-  // console.log(cardId);
   deleteCardId(cardId)
     .then(() => {
-      // console.log(res);
       card.remove();
     })
     .catch((err) => {
@@ -57,23 +63,20 @@ export function likeCard(evt) {
   const cardId = card.id;
   const targetLike = evt.target;
   let likeNumbers = card.querySelector(".card__like-number");
-  if (targetLike.classList.contains("card__like-button")) {
-    targetLike.classList.toggle("card__like-button_is-active");
-  }
   if (targetLike.classList.contains("card__like-button_is-active")) {
-    addLike(cardId)
+    removeLike(cardId)
       .then((res) => {
-        console.log(res.likes.length);
         likeNumbers.textContent = res.likes.length;
+        targetLike.classList.remove("card__like-button_is-active");
       })
       .catch((err) => {
         console.log(`Ошибка: ${err}`);
       });
   } else {
-    removeLike(cardId)
+    addLike(cardId)
       .then((res) => {
-        console.log(res.likes.length);
         likeNumbers.textContent = res.likes.length;
+        targetLike.classList.add("card__like-button_is-active");
       })
       .catch((err) => {
         console.log(`Ошибка: ${err}`);
@@ -81,6 +84,14 @@ export function likeCard(evt) {
   }
 }
 
+// @todo: Проверка где именно я поставил лайк
+function checkMyLike(likeId, likeButton) {
+  if (likeId === profileName.id) {
+    likeButton.classList.add("card__like-button_is-active");
+  }
+}
+
+// @todo: Убираем кнопки удаления с карточек, которые создал не я
 export function removeDeleteButton(obj, deleteButton) {
   if (obj.owner._id !== profileName.id) {
     deleteButton.remove();

@@ -8,6 +8,7 @@ import {
   getInitialCards,
   addUserInfo,
   addNewCard,
+  addNewUserAvatar,
 } from "./scripts/api ";
 
 // @todo: Контейнер для карточек
@@ -22,11 +23,13 @@ const profileImage = document.querySelector(".profile__image");
 const popups = document.querySelectorAll(".popup");
 const popupEdit = document.querySelector(".popup_type_edit");
 const popupAdd = document.querySelector(".popup_type_new-card");
+const popupAvatar = document.querySelector(".popup_type_new-avatar");
 
 // @todo: Кнопки закрытия и открытия попапа
 const closeBtns = document.querySelectorAll(".popup__close");
 const editButton = document.querySelector(".profile__edit-button");
 const addButton = document.querySelector(".profile__add-button");
+const newAvatarButton = document.querySelector(".profile__avatar_edit-button");
 
 // @todo: Форма профиля;
 const formElementEdit = document.querySelector(
@@ -44,6 +47,14 @@ const placeInput = formElementAdd.querySelector(
 );
 const srcInput = formElementAdd.querySelector('.popup__input[name="link"]');
 
+// @todo: Форма аватара;
+const formElementAvatar = document.querySelector(
+  '.popup__form[name="new-avatar"]'
+);
+const srcInputAvatar = formElementAvatar.querySelector(
+  '.popup__input[name="link"]'
+);
+
 //@todo: Функция добавления карточки (разметка)
 function addCard(
   dataCard,
@@ -59,13 +70,16 @@ function addCard(
 // @todo: Добавить карточку на страницу через форму с сабмитом
 function placeFormSubmit(evt) {
   evt.preventDefault();
-  // Получаем значение полей jobInput и nameInput из свойства value
+  const popupButton = evt.target.querySelector(".popup__button");
+  // Получаем значение полей placeValue и srcValue из свойства value и передаем их в объект
   const placeValue = placeInput.value;
   const srcValue = srcInput.value;
   const obj = { name: placeValue, link: srcValue };
+  // Меняем текст кнопки сохранить при загрузке данных
+  renderLoading(true, popupButton);
+  // Создаем новую карточку, добавляем ее на сервер и на страницу
   addNewCard(obj)
     .then((res) => {
-      console.log(res);
       container.prepend(
         createCard(res, deleteCardFunction, likeCard, openImagePopup)
       );
@@ -74,18 +88,24 @@ function placeFormSubmit(evt) {
     })
     .catch((err) => {
       console.log(`Ошибка: ${err}`);
+    })
+    .finally(() => {
+      renderLoading(false, popupButton);
     });
 }
 
 // @todo: Редактируем данные профиля на странице
 function handleFormSubmit(evt) {
   evt.preventDefault();
+  const popupButton = evt.target.querySelector(".popup__button");
   // Получаем значение полей jobInput и nameInput из свойства value
   const nameValue = nameInput.value;
   const jobValue = jobInput.value;
+  // Меняем текст кнопки сохранить при загрузке данных
+  renderLoading(true, popupButton);
+  // Меняем данные пользователя на сервере и на странице
   addUserInfo(nameValue, jobValue)
     .then((res) => {
-      // console.log(res);
       profileName.id = res._id;
       profileName.textContent = res.name;
       profileDescription.textContent = res.about;
@@ -93,6 +113,32 @@ function handleFormSubmit(evt) {
     })
     .catch((err) => {
       console.log(`Ошибка: ${err}`);
+    })
+    .finally(() => {
+      renderLoading(false, popupButton);
+    });
+}
+
+// @todo: Редактируем аватар на странице
+
+function avatarFormSubmit(evt) {
+  evt.preventDefault();
+  const popupButton = evt.target.querySelector(".popup__button");
+  // Получаем значение поля srcInputAvatar
+  const srcValue = srcInputAvatar.value;
+  // Меняем текст кнопки сохранить при загрузке данных
+  renderLoading(true, popupButton);
+  // Меняем аватар на сервере и на странице
+  addNewUserAvatar(srcValue)
+    .then((res) => {
+      profileImage.src = res.avatar;
+      closeModal(popupAvatar);
+    })
+    .catch((err) => {
+      console.log(`Ошибка: ${err}`);
+    })
+    .finally(() => {
+      renderLoading(false, popupButton);
     });
 }
 
@@ -109,12 +155,20 @@ function openImagePopup(evt, obj) {
   }
 }
 
+// @todo: Меняем текст кнопки сохранить при загрузке данных
+function renderLoading(isLoading, button) {
+  const buttonText = "Сохранить";
+  const loadingText = "Сохранение...";
+  if (isLoading) {
+    button.textContent = loadingText;
+  } else {
+    button.textContent = buttonText;
+  }
+}
+
 // -----------------ВЫЗОВЫ ФУНКЦИЙ--------------------
 
 // @todo: Вывести карточки на страницу
-// initialCards.forEach(function (element) {
-//   addCard(element, deleteCardFunction, likeCard, openImagePopup);
-// });
 
 const initialCards = (cardsArr) =>
   cardsArr.forEach(function (element) {
@@ -139,6 +193,7 @@ editButton.addEventListener("click", function () {
   });
   openModal(popupEdit);
 });
+
 addButton.addEventListener("click", function () {
   clearValidation(popupAdd, {
     formSelector: ".popup__form",
@@ -149,6 +204,18 @@ addButton.addEventListener("click", function () {
     errorClass: "popup__error_visible",
   });
   openModal(popupAdd);
+});
+
+newAvatarButton.addEventListener("click", function () {
+  clearValidation(popupAvatar, {
+    formSelector: ".popup__form",
+    inputSelector: ".popup__input",
+    submitButtonSelector: ".popup__button",
+    inactiveButtonClass: "popup__button_disabled",
+    inputErrorClass: "popup__input_type_error",
+    errorClass: "popup__error_visible",
+  });
+  openModal(popupAvatar);
 });
 
 // @todo: Закрытие попапов на крестик
@@ -175,6 +242,14 @@ formElementAdd.addEventListener("submit", function (evt) {
   formElementAdd.reset();
 });
 
+// @todo: Редактирование аватара
+
+formElementAvatar.addEventListener("submit", function (evt) {
+  avatarFormSubmit(evt);
+  formElementAvatar.reset();
+});
+
+// @todo: Включаем валидацию
 enableValidation({
   formSelector: ".popup__form",
   inputSelector: ".popup__input",
@@ -184,7 +259,7 @@ enableValidation({
   errorClass: "popup__error_visible",
 });
 
-// -------------------------------------------------------
+// @todo: Выводим все карточки созданные другими студентами, получаем и присваиваем данные профиля, получаем уникальный идентификатор для дальнейшей работы;
 
 Promise.all([getUserInfo(), getInitialCards()])
   .then(([userData, dataCards]) => {

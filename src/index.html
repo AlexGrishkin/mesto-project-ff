@@ -21,15 +21,12 @@
       </header>
       <main class="content">
         <section class="profile page__section">
-          <!-- <img
+          <img
             class="profile__image"
             src="<%=require(`./images/avatar.jpg`)%>"
             alt="Аватар пользователя"
-          /> -->
-          <div
-            class="profile__image"
-            style="background-image: url('<%=require(`./images/avatar.jpg`)%>')"
-          ></div>
+          />
+          <button class="profile__avatar_edit-button open_button"></button>
           <div class="profile__info">
             <h1 class="profile__title">Жак-Ив Кусто</h1>
             <button
@@ -48,7 +45,7 @@
         </section>
       </main>
       <footer class="footer page__section">
-        <p class="footer__copyright">© 2021 Mesto Russia</p>
+        <p class="footer__copyright">© 2023 Alexey Grishkin</p>
       </footer>
       <div class="popup popup_type_edit popup_is-animated">
         <div class="popup__content">
@@ -100,11 +97,33 @@
               placeholder="Название"
               minlength="2"
               maxlength="30"
+              pattern="[a-zA-Zа-яА-ЯёЁ\s\-]+"
+              data-error-message="Разрешены только латинские, кириллические буквы, знаки дефиса и пробелы"
               required
             />
             <span
               class="popup__error_visible popup-place-name-input_error"
             ></span>
+            <input
+              type="url"
+              name="link"
+              class="popup__input popup__input_type_url"
+              id="popup-link-input"
+              placeholder="Ссылка на картинку"
+              required
+            />
+            <span class="popup__error_visible popup-link-input_error"></span>
+            <button type="submit" class="button popup__button">
+              Сохранить
+            </button>
+          </form>
+        </div>
+      </div>
+      <div class="popup popup_type_new-avatar popup_is-animated">
+        <div class="popup__content">
+          <button type="button" class="popup__close"></button>
+          <h3 class="popup__title">Обновить аватар</h3>
+          <form class="popup__form" name="new-avatar">
             <input
               type="url"
               name="link"
@@ -141,8 +160,6 @@
             <button type="button" class="card__like-button"></button>
             <p class="card__like-number">0</p>
           </div>
-          <!-- <button type="button" class="card__like-button"></button>
-          <p class="card__like-number">0</p> -->
         </div>
       </li>
     </template>
