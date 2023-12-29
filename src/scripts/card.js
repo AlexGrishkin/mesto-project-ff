@@ -1,18 +1,25 @@
 import { profileName } from "../index";
 import { deleteCardId, addLike, removeLike } from "./api ";
 // @todo: Переменные для создания карточки
-const cardTemplate = document.querySelector("#card-template").content;
+export const cardTemplate = document.querySelector("#card-template").content;
+
+// @todo: Функция клонирования шаблона
+function getCardTemplate(templateElement, selector) {
+  const cardElement = templateElement
+    .querySelector(`.${selector}`)
+    .cloneNode(true);
+  return cardElement;
+}
 
 // @todo: Функция создания карточки
 export function createCard(
   cardData,
   deleteCard,
   likeCardFunction,
-  openImageFunction
+  openImageFunction,
+  templateElement
 ) {
-  const cardElement = cardTemplate
-    .querySelector(".places__item")
-    .cloneNode(true);
+  const cardElement = getCardTemplate(templateElement, "places__item");
   // @todo: присваеваем карточки уникальный айди
   cardElement.id = cardData._id;
   // @todo: необходимые константы
@@ -62,7 +69,7 @@ export function likeCard(evt) {
   const card = evt.target.closest(".places__item");
   const cardId = card.id;
   const targetLike = evt.target;
-  let likeNumbers = card.querySelector(".card__like-number");
+  const likeNumbers = card.querySelector(".card__like-number");
   if (targetLike.classList.contains("card__like-button_is-active")) {
     removeLike(cardId)
       .then((res) => {

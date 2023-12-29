@@ -42,13 +42,13 @@ export function addUserInfo(addName, addAbout) {
 }
 
 // @todo: Отправляем на сервер новую карточку
-export function addNewCard(obj) {
+export function addNewCard(cardData) {
   return fetch(`${config.baseUrl}/cards`, {
     method: "POST",
     headers: config.headers,
     body: JSON.stringify({
-      name: obj.name,
-      link: obj.link,
+      name: cardData.name,
+      link: cardData.link,
     }),
   }).then(getResponse);
 }
