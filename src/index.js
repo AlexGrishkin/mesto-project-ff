@@ -1,7 +1,12 @@
 import "./pages/index.css";
 // import { initialCards } from "./scripts/cards";
 import { openModal, closeModal, closeOverlay } from "./scripts/modal";
-import { createCard, deleteCardFunction, likeCard } from "./scripts/card";
+import {
+  createCard,
+  deleteCardFunction,
+  likeCard,
+  cardTemplate,
+} from "./scripts/card";
 import { enableValidation, clearValidation } from "./scripts/validation";
 import {
   getUserInfo,
@@ -24,6 +29,17 @@ const popups = document.querySelectorAll(".popup");
 const popupEdit = document.querySelector(".popup_type_edit");
 const popupAdd = document.querySelector(".popup_type_new-card");
 const popupAvatar = document.querySelector(".popup_type_new-avatar");
+
+// @todo: Элементы попапапов с картинкой
+const imagePopup = document.querySelector(".popup_type_image");
+const image = imagePopup.querySelector(".popup__image");
+const imageCaption = imagePopup.querySelector(".popup__caption");
+
+// @todo: Элементы попапа профиля
+const inputName = popupEdit.querySelector(".popup__input_type_name");
+const inputDescription = popupEdit.querySelector(
+  ".popup__input_type_description"
+);
 
 // @todo: Кнопки закрытия и открытия попапа
 const closeBtns = document.querySelectorAll(".popup__close");
@@ -55,6 +71,17 @@ const srcInputAvatar = formElementAvatar.querySelector(
   '.popup__input[name="link"]'
 );
 
+// @todo: Конфиг валидации
+
+const validationConfig = {
+  formSelector: ".popup__form",
+  inputSelector: ".popup__input",
+  submitButtonSelector: ".popup__button",
+  inactiveButtonClass: "popup__button_disabled",
+  inputErrorClass: "popup__input_type_error",
+  errorClass: "popup__error_visible",
+};
+
 //@todo: Функция добавления карточки (разметка)
 function addCard(
   dataCard,
@@ -63,7 +90,13 @@ function addCard(
   openImageFunction
 ) {
   container.append(
-    createCard(dataCard, deleteFunction, likeCardFunction, openImageFunction)
+    createCard(
+      dataCard,
+      deleteFunction,
+      likeCardFunction,
+      openImageFunction,
+      cardTemplate
+    )
   );
 }
 
@@ -74,14 +107,20 @@ function placeFormSubmit(evt) {
   // Получаем значение полей placeValue и srcValue из свойства value и передаем их в объект
   const placeValue = placeInput.value;
   const srcValue = srcInput.value;
-  const obj = { name: placeValue, link: srcValue };
+  const cardData = { name: placeValue, link: srcValue };
   // Меняем текст кнопки сохранить при загрузке данных
   renderLoading(true, popupButton);
   // Создаем новую карточку, добавляем ее на сервер и на страницу
-  addNewCard(obj)
+  addNewCard(cardData)
     .then((res) => {
       container.prepend(
-        createCard(res, deleteCardFunction, likeCard, openImagePopup)
+        createCard(
+          res,
+          deleteCardFunction,
+          likeCard,
+          openImagePopup,
+          cardTemplate
+        )
       );
 
       closeModal(popupAdd);
@@ -143,14 +182,11 @@ function avatarFormSubmit(evt) {
 }
 
 // @todo: Открываем попап картинки;
-function openImagePopup(evt, obj) {
+function openImagePopup(evt, cardData) {
   if (evt.target.classList.contains("card__image")) {
-    const imagePopup = document.querySelector(".popup_type_image");
-    const image = imagePopup.querySelector(".popup__image");
-    const imageCaption = imagePopup.querySelector(".popup__caption");
-    image.src = obj.link;
-    image.alt = obj.name;
-    imageCaption.textContent = obj.name;
+    image.src = cardData.link;
+    image.alt = cardData.name;
+    imageCaption.textContent = cardData.name;
     openModal(imagePopup);
   }
 }
@@ -170,51 +206,26 @@ function renderLoading(isLoading, button) {
 
 // @todo: Вывести карточки на страницу
 
-const initialCards = (cardsArr) =>
+const renderInitialCards = (cardsArr) =>
   cardsArr.forEach(function (element) {
     addCard(element, deleteCardFunction, likeCard, openImagePopup);
   });
 
 // @todo: Открытие попапов
 editButton.addEventListener("click", function () {
-  const inputName = popupEdit.querySelector(".popup__input_type_name");
-  const inputDescription = popupEdit.querySelector(
-    ".popup__input_type_description"
-  );
   inputName.value = profileName.textContent;
   inputDescription.value = profileDescription.textContent;
-  clearValidation(popupEdit, {
-    formSelector: ".popup__form",
-    inputSelector: ".popup__input",
-    submitButtonSelector: ".popup__button",
-    inactiveButtonClass: "popup__button_disabled",
-    inputErrorClass: "popup__input_type_error",
-    errorClass: "popup__error_visible",
-  });
+  clearValidation(popupEdit, validationConfig);
   openModal(popupEdit);
 });
 
 addButton.addEventListener("click", function () {
-  clearValidation(popupAdd, {
-    formSelector: ".popup__form",
-    inputSelector: ".popup__input",
-    submitButtonSelector: ".popup__button",
-    inactiveButtonClass: "popup__button_disabled",
-    inputErrorClass: "popup__input_type_error",
-    errorClass: "popup__error_visible",
-  });
+  clearValidation(popupAdd, validationConfig);
   openModal(popupAdd);
 });
 
 newAvatarButton.addEventListener("click", function () {
-  clearValidation(popupAvatar, {
-    formSelector: ".popup__form",
-    inputSelector: ".popup__input",
-    submitButtonSelector: ".popup__button",
-    inactiveButtonClass: "popup__button_disabled",
-    inputErrorClass: "popup__input_type_error",
-    errorClass: "popup__error_visible",
-  });
+  clearValidation(popupAvatar, validationConfig);
   openModal(popupAvatar);
 });
 
@@ -250,14 +261,7 @@ formElementAvatar.addEventListener("submit", function (evt) {
 });
 
 // @todo: Включаем валидацию
-enableValidation({
-  formSelector: ".popup__form",
-  inputSelector: ".popup__input",
-  submitButtonSelector: ".popup__button",
-  inactiveButtonClass: "popup__button_disabled",
-  inputErrorClass: "popup__input_type_error",
-  errorClass: "popup__error_visible",
-});
+enableValidation(validationConfig);
 
 // @todo: Выводим все карточки созданные другими студентами, получаем и присваиваем данные профиля, получаем уникальный идентификатор для дальнейшей работы;
 
@@ -267,7 +271,7 @@ Promise.all([getUserInfo(), getInitialCards()])
     profileName.textContent = userData.name;
     profileDescription.textContent = userData.about;
     profileImage.src = userData.avatar;
-    initialCards(dataCards);
+    renderInitialCards(dataCards);
   })
   .catch((err) => {
     console.log(`Ошибка: ${err}`);
