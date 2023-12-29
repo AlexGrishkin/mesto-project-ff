@@ -1,4 +1,4 @@
-// @todo: Открыть попап
+// @todo: Открыть попап;
 export function openModal(popup) {
   popup.classList.add("popup_is-opened");
   document.addEventListener("keydown", keyHandler);
